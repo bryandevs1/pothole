@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pothole Data Table</title>
+  <style>
+    /* Add your custom CSS styles here */
+    body {
+      font-family: Arial, sans-serif;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pothole Data Table</h1>
+  <table id="potholeTable">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Location Name</th>
+      </tr>
+    </thead>
+    <tbody id="potholeTableBody">
+      <!-- Table rows will be dynamically populated here -->
+    </tbody>
+  </table>
+
+  <script>
+    // Function to fetch pothole data from server
+    function fetchPotholes() {
+      fetch('/api/getPotholes')
+        .then(response => response.json())
+        .then(data => {
+          const potholeTableBody = document.getElementById('potholeTableBody');
+          potholeTableBody.innerHTML = ''; // Clear existing table rows
+
+          // Array to keep track of locations to avoid duplicates
+          const seenLocations = {};
+
+          data.forEach(pothole => {
+            const locationKey = `${pothole.latitude}-${pothole.longitude}`;
+            if (!seenLocations[locationKey]) {
+              seenLocations[locationKey] = true;
+
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                <td>${new Date(pothole.timestamp).toLocaleString()}</td>
+                <td>${pothole.latitude}</td>
+                <td>${pothole.longitude}</td>
+                <td>${getAddressFromCoordinates(pothole.latitude, pothole.longitude)}</td>
+              `;
+              potholeTableBody.appendChild(row);
+            }
+          });
+        })
+        .catch(error => console.error('Error fetching potholes:', error));
+    }
+
+    // Function to get address from latitude and longitude (replace with your logic)
+    function getAddressFromCoordinates(latitude, longitude) {
+      // Implement your logic to fetch address based on coordinates
+      return `Location ${latitude}, ${longitude}`; // Example placeholder
+    }
+
+    fetchPotholes(); // Fetch potholes initially
+    setInterval(fetchPotholes, 5 * 60 * 1000); // Fetch potholes periodically (adjust interval as needed)
+  </script>
+</body>
+</html>
